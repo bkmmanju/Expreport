@@ -34,15 +34,6 @@ $createreport = has_capability('local/expreport:createreport',$context);
 $PAGE->set_context($context);
 $PAGE->set_pagelayout('admin');
 $PAGE->set_url($CFG->wwwroot . '/local/expreport/index.php');
-
-$PAGE->navbar->add(get_string('siteadministration','local_expreport'),new moodle_url('/admin/search.php'));
-
-$PAGE->navbar->add(get_string('plugins','local_expreport'),new moodle_url('/admin/category.php?category=modules'));
-
-$PAGE->navbar->add(get_string('localplugins','local_expreport'),new moodle_url('/admin/category.php?category=localplugins'));
-
-$PAGE->navbar->add(get_string('exportreportsettings','local_expreport'),new moodle_url('/admin/settings.php?section=expreport'));
-
 $title = get_string('title','local_expreport');
 $PAGE->navbar->add($title);
 $PAGE->set_title($title);
@@ -79,6 +70,15 @@ if ($mform->is_cancelled()) {
 		$reporttable = expreport_report_table($allusers);
 
 		$html.=html_writer::start_div('container-fluid');
+		$html.=html_writer::start_div('row');
+		$html.=html_writer::start_div('col-md-12');
+		$html.=html_writer::start_tag('h2');
+		$html.=get_string('reporttitle','local_expreport');
+		$html.=html_writer::end_tag('h2');
+		$html.=html_writer::end_div();
+		$html.=html_writer::end_div();
+
+
 		$html.=html_writer::start_div('row');
 		$html.=html_writer::start_div('form-group');
 		$html.=html_writer::start_tag('select',array('class'=>'form-control','name'=>'state','id'=>'maxRows'));

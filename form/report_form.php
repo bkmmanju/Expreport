@@ -89,7 +89,12 @@ class report_form extends moodleform {
 			}
 
 		}
-		$mform->addElement('submit', 'submit', get_string('submit', 'local_expreport'));
+		//action buttons start here//
+		$buttonarray = array();
+		$buttonarray[] = $mform->createElement('submit','submitbutton',get_string('submit','local_expreport'));
+		$buttonarray[] = $mform->createElement('cancel');
+
+		$mform->addGroup($buttonarray,'buttonarray','','',false);
 	}
 	//Custom validation should be added here
 	function validation($data, $files) {

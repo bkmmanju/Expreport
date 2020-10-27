@@ -26,6 +26,18 @@
 
 defined('MOODLE_INTERNAL') || die;
 global $DB;
+// Used to stay DRY with the get_string function call.
+$componentname = 'local_expreport';
+$ADMIN->add('localplugins', new \admin_category('local_expreport', get_string('title', $componentname)));
+
+// Add the 'Add other pages' page to the nav tree.
+$ADMIN->add(
+	'local_expreport',
+	new \admin_externalpage(
+		'expreport',
+		get_string('createreport', $componentname),
+		new \moodle_url('/local/expreport/index.php')
+	));
 
 if ($hassiteconfig) {
 

@@ -73,5 +73,8 @@ if(!empty($content)){
 		$insert->timecreated = time();
 		$insert->mailsent = 0;
 		$result = $DB->insert_record('local_expreport',$insert);
+		if($result){
+			echo "inserted";
+		}
 	}
 }

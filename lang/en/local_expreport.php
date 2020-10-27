@@ -7,6 +7,7 @@ $string['current'] = '(current)';
 $string['coursename'] = 'Course name';
 $string['coursecompletion'] = 'Course Completion status';
 $string['complet'] = 'Completed';
+$string['createreport'] = 'Create report';
 $string['downloadinexcel'] = 'Download in EXCEL';
 $string['exportreportsettings'] = 'Export Report Settings';
 $string['enterprofilefields'] = 'User fields and user custom profile fields separated by comma';
