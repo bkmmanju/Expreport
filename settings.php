@@ -30,7 +30,7 @@ global $DB;
 $componentname = 'local_expreport';
 $ADMIN->add('localplugins', new \admin_category('local_expreport', get_string('title', $componentname)));
 
-// Add the 'Add other pages' page to the nav tree.
+// Add the 'create report' page to the nav tree.
 $ADMIN->add(
 	'local_expreport',
 	new \admin_externalpage(
