@@ -1,0 +1,24 @@
+/*aligning the table contents in the center*/
+#page-local-expreport-index table th , table td{
+    text-align: center;
+}
+/*adding colors to the table rows*/
+#page-local-expreport-index table tr:nth-child(even){
+    background-color: #BEF2F5
+}
+/*on pagination hover making cursor pointer*/
+#page-local-expreport-index .pagination li:hover{
+    cursor: pointer;
+}
+/*on pagination hover adding color blue*/
+#page-local-expreport-index .pagination li:hover{
+    color: blue;
+}
+/*padding between the pagination elements*/
+#page-local-expreport-index .pagination li{
+    padding: 5px;
+}
+/*pagination elements color*/
+#page-local-expreport-index .pagination li{
+    color: blue;
+}
