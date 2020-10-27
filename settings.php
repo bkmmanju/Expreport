@@ -26,18 +26,6 @@
 
 defined('MOODLE_INTERNAL') || die;
 global $DB;
-// Used to stay DRY with the get_string function call.
-$componentname = 'local_expreport';
-$ADMIN->add('localplugins', new \admin_category('local_expreport', get_string('title', $componentname)));
-
-// Add the 'create report' page to the nav tree.
-$ADMIN->add(
-	'local_expreport',
-	new \admin_externalpage(
-		'expreport',
-		get_string('createreport', $componentname),
-		new \moodle_url('/local/expreport/index.php')
-	));
 
 if ($hassiteconfig) {
 
@@ -99,4 +87,17 @@ if ($hassiteconfig) {
 	$default = '';
 	$setting = new admin_setting_configtextarea($name, $title, $description, $default);    
 	$settings->add($setting);
+
+	// Used to stay DRY with the get_string function call.
+	$componentname = 'local_expreport';
+	$ADMIN->add('localplugins', new \admin_category('local_expreport', get_string('title', $componentname)));
+
+// Add the 'create report' page to the nav tree.
+	$ADMIN->add(
+		'local_expreport',
+		new \admin_externalpage(
+			'expreport',
+			get_string('createreport', $componentname),
+			new \moodle_url('/local/expreport/index.php')
+		));
 }
