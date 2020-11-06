@@ -26,7 +26,8 @@
 
 defined('MOODLE_INTERNAL') || die;
 global $DB;
-
+//version 2 changes: Create report page setting added seperately.
+require('navigation_setting.php');
 if ($hassiteconfig) {
 
 	$moderator = get_admin();
@@ -76,7 +77,7 @@ if ($hassiteconfig) {
 	$name = 'expreport/emailsubject';
 	$title = get_string('enteremailsubject', 'local_expreport');
 	$description = get_string('enteremailsubjectdescription', 'local_expreport');
-	$default = '';
+	$default = get_string('defaultmailsubject','local_expreport');
 	$setting = new admin_setting_configtext($name, $title, $description, $default);    
 	$settings->add($setting);
 
@@ -84,20 +85,7 @@ if ($hassiteconfig) {
 	$name = 'expreport/emailbody';
 	$title = get_string('enteremailbody', 'local_expreport');
 	$description = get_string('enteremailbodydescription', 'local_expreport');
-	$default = '';
+	$default = get_string('defaultmailbody','local_expreport');
 	$setting = new admin_setting_configtextarea($name, $title, $description, $default);    
 	$settings->add($setting);
-
-	// Used to stay DRY with the get_string function call.
-	$componentname = 'local_expreport';
-	$ADMIN->add('localplugins', new \admin_category('local_expreport', get_string('title', $componentname)));
-
-// Add the 'create report' page to the nav tree.
-	$ADMIN->add(
-		'local_expreport',
-		new \admin_externalpage(
-			'expreport',
-			get_string('createreport', $componentname),
-			new \moodle_url('/local/expreport/index.php')
-		));
 }

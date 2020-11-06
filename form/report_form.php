@@ -41,17 +41,18 @@ class report_form extends moodleform {
 		$exploadvalus = explode(",", $userfields);
 		foreach ($exploadvalus as $value) {
 			$fieldvalues = $DB->get_record('user_info_field',array('shortname'=>$value));
+
 			//Creating text fields if exists.
 			if(!empty($fieldvalues)){
 				if($fieldvalues->datatype =='text'){
-					$mform->addElement('text',$fieldvalues->shortname, $fieldvalues->name);
+					$mform->addElement('text',"text_".$fieldvalues->id.'_'.$fieldvalues->shortname, $fieldvalues->name);
 					$mform->setType($fieldvalues->shortname, PARAM_RAW);
 				}
 			}
 			//Creating text area fields.
 			if(!empty($fieldvalues)){
 				if($fieldvalues->datatype =='textarea'){
-					$mform->addElement('editor', $fieldvalues->shortname, $fieldvalues->name, 'wrap="virtual" rows="10" cols="80"');
+					$mform->addElement('editor', "textarea_".$fieldvalues->id."_".$fieldvalues->shortname, $fieldvalues->name, 'wrap="virtual" rows="10" cols="80"');
 					$mform->setType($fieldvalues->shortname, PARAM_RAW);
 				}
 			}
@@ -62,7 +63,7 @@ class report_form extends moodleform {
 					foreach ($selectvalues as $dropdownvalues) {
 						$dropdownarray[$dropdownvalues]=$dropdownvalues;
 					}
-					$mform->addElement('select', $fieldvalues->shortname, $fieldvalues->name, $dropdownarray);
+					$mform->addElement('select', "menu_".$fieldvalues->id."_".$fieldvalues->shortname, $fieldvalues->name, $dropdownarray);
 					$mform->setType($fieldvalues->shortname, PARAM_RAW);
 				}
 			}
@@ -75,7 +76,7 @@ class report_form extends moodleform {
 					'optional'  => false
 				);
 				if($fieldvalues->datatype =='datetime'){
-					$mform->addElement('date_time_selector', $fieldvalues->shortname, $fieldvalues->name,$date_options);
+					$mform->addElement('date_time_selector', "datetime_".$fieldvalues->id."_".$fieldvalues->shortname, $fieldvalues->name,$date_options);
 					$mform->setType($fieldvalues->shortname, PARAM_RAW);
 				}
 			}
@@ -83,7 +84,7 @@ class report_form extends moodleform {
 			//Creating checkbox if exists.
 			if(!empty($fieldvalues)){
 				if($fieldvalues->datatype =='checkbox'){
-					$mform->addElement('advcheckbox', $fieldvalues->shortname, $fieldvalues->name, $fieldvalues->name, '', array(0, 1));
+					$mform->addElement('advcheckbox', "checkbox_".$fieldvalues->id."_".$fieldvalues->shortname, $fieldvalues->name, $fieldvalues->name, '', array(0, 1));
 					$mform->setType($fieldvalues->shortname, PARAM_RAW);
 				}
 			}

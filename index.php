@@ -155,21 +155,42 @@ if ($mform->is_cancelled()) {
 			curl_close($ch);
 		}
 		$html.=html_writer::end_div();
+	}else{
+		//version 2: added error message if no data found.
+		$html.=html_writer::div(
+			get_string('norecordsfound', 'local_expreport'),'alert alert-danger'
+		);
 	}
 }
 echo $OUTPUT->header();
+//checking all the settings value if any of the valuse are empty then showing error message here.
 if($createreport){
+	$config = get_config('expreport');
+	$userfields = $config->profilefields;
+	if($userfields == ""){
+		echo html_writer::div(
+			get_string('userprofilefieldserror', 'local_expreport'),'alert alert-danger'
+		);
+	}
+	if($config->courseids == ""){
+		echo html_writer::div(
+			get_string('coursefieldserror', 'local_expreport'),'alert alert-danger'
+		);
+	}
+	if($config->emailid ==""){
+		echo html_writer::div(
+			get_string('emailiderror', 'local_expreport'),'alert alert-danger'
+		);
+	}
 	echo $heading;
 	//displays the form
 	$mform->display();
 //display the report table.
 	echo $html;
 }else{
+	//if the logged in user dont have the capability to view this page then showing error.
 	echo html_writer::div(
 		get_string('cap', 'local_expreport'),'alert alert-danger'
 	);
 }
-
-
-
 echo $OUTPUT->footer();

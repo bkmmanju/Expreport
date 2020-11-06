@@ -30,60 +30,39 @@ require_once("$CFG->libdir/gradelib.php");
 /**
 * Manjunath: Function to get all the users who are matched the filter *criteria.
 * @param array $data contains all form data.
-* @return array $finaluserarray contains all the user's id matched *the *criteria.
+* @return array $allusers contains all the user's id matched the *criteria.
 **/
 function expreport_users_matched_filter_criteria($data){
 	global $DB,$CFG;
-	//Getting the course id's from settings.
+	//Getting the form data and converting that into array.
 	$formdataarray = (array)$data;
+	//getting all users matching the filter criteria.
+	$allmatchedusers = expreport_users_matched_filter_criteria_allusers($data);
+	$allusers = $allmatchedusers[0];
+	//Getting the course id's from settings.
 	$config = get_config('expreport');
 	$allcourses = $config->courseids;
-	$userfields = $config->profilefields;
-	$exploadfields = explode(",", $userfields);
-	$allusers = [];
-	//getting all the enrolled users in these courses.s
 	if(!empty($allcourses)){
 		$allcourseids = explode(",", $allcourses);
+		$counter=1;
 		foreach ($allcourseids as $courseid) {
 			//get the enrolled users in this course.
 			$enrolledusers = expreport_get_enroled_userdata_expreport($courseid);
-			$allusers = array_unique(array_merge($allusers,$enrolledusers));
-		}
-		sort($allusers);
-	}
-	//check the enrolled users satisfy all the conditions.
-	$finaluserarray = [];
-	foreach ($allusers as $user) {
-		$status = 0;
-		foreach ($exploadfields as $userfield) {
-			$fielddata = $DB->get_record('user_info_field',array('shortname'=>$userfield));
-			if(!empty($fielddata)){
-				if(!empty($fielddata) && $fielddata->datatype =='text' || $fielddata->datatype =='menu' || $fielddata->datatype =='checkbox' || $fielddata->datatype =='datetime'){
-
-					$result = $DB->get_records_sql("SELECT * FROM {user_info_data} WHERE fieldid ='$fielddata->id' AND data='$formdataarray[$userfield]' AND userid='$user' AND data != ' '");
-
-					if(!empty($result)){
-						$status = 1;
-					}
-
-				}else if(!empty($fielddata) && $fielddata->datatype =='textarea'){
-					$textdata = $formdataarray[$userfield]['text'];
-					$result = $DB->get_records_sql("SELECT * FROM {user_info_data} WHERE fieldid ='$fielddata->id' AND data='$textdata' AND userid='$user' AND data != ' '");
-					if(!empty($result)){
-						$status = 1;
-					}
+			//print_object($enrolledusers);
+			if($allmatchedusers[1]){
+				$allusers = array_intersect($allusers,$enrolledusers);
+			}else{
+				if($counter == 1){
+					$allusers = $enrolledusers;
+				}else{
+					$allusers = array_unique(array_merge($allusers,$enrolledusers));
 				}
-
 			}
 		}
-		if($status){
-			$finaluserarray[] = $user;
-		}
-		$status = 0;
 	}
-	return $finaluserarray;
+	//gettin all users matching filter criteri and also enrolled in course ends.
+	return $allusers;
 }
-
 
 /**
 * Manjunath: Function will give list of enrollement users inside courses.
@@ -114,6 +93,17 @@ function expreport_report_table($allusers){
 	$allcourseids = explode(",", $allcourses);
 	$userfields = $config->profilefields;
 	$exploadvalus = explode(",", $userfields);
+	//making in array format for all users.
+	$i = 1;
+	$userinarray = "";
+	foreach ($allusers as $user) {
+		if($i == 1){
+			$userinarray ="'".$user."'";
+		}else{
+			$userinarray = $userinarray.","."'".$user."'";
+		}
+		$i++;
+	}
 
 	$reporttable="";
 	$reporttable.=html_writer::start_tag('table',array('id'=>'myTable'));
@@ -123,6 +113,7 @@ function expreport_report_table($allusers){
 	//including table data here.
 	$reporttable.=html_writer::start_tag('tbody');
 	foreach ($allcourseids as $courseid) {
+
 		//creating course object from course id.
 		$course = $DB->get_record('course',array('id'=>$courseid));
 		//creating rows for all enrolled users in this course.
@@ -171,10 +162,15 @@ function expreport_report_table($allusers){
 					$reporttable.=html_writer::end_tag('td');
 					//
 					$reporttable.=html_writer::start_tag('td');
-					$reporttable.=$activity['activityname'];
+					$reporttable.=$activity['activitytitle'];
 					$reporttable.=html_writer::end_tag('td');
 					$reporttable.=html_writer::start_tag('td');
-					$reporttable.=$activity['activitystatus'];
+					if($activity['complete']){
+						$actstatus = get_string('complet','local_expreport');
+					}else{
+						$actstatus = get_string('notcomplete','local_expreport');
+					}
+					$reporttable.=$actstatus;
 					$reporttable.=html_writer::end_tag('td');
 					$reporttable.=html_writer::start_tag('td');
 					$reporttable.=$activity['activitygrade'];
@@ -183,6 +179,7 @@ function expreport_report_table($allusers){
 				}
 			}
 		}
+		
 	}
 	$reporttable.=html_writer::end_tag('tbody');
 	//including table data ends here.
@@ -198,39 +195,37 @@ function expreport_report_table($allusers){
 */
 function expreport_all_activity_details($course,$user){
 	global $DB;
-	$dataarray=[];
-// Get course completion data.
-	$info = new \completion_info($course);
-// Load criteria to display.
+	// Load course completion.
+	$params = array(
+		'userid' => $user->id,
+		'course' => $course->id,
+	);
+	$ccompletion = new completion_completion($params);
+	// Load criteria to display.
+	$info = new completion_info($course);
 	$completions = $info->get_completions($user->id);
-// Check this user is enroled.
-	if ($info->is_tracked_user($user->id)) {
-// Loop through course criteria.
-		$notcomplete='';
-		foreach ($completions as $completion) {
-			$criteria = $completion->get_criteria();
-			$complete = $completion->is_complete();
-			if ($criteria->criteriatype == COMPLETION_CRITERIA_TYPE_ACTIVITY) {
-				$activities[$criteria->moduleinstance] = $complete;
-				$modinfo = get_fast_modinfo($course);
-				$cm = $modinfo->get_cm($criteria->moduleinstance);
-				$activityname=$cm->name;
-				$completion = new \completion_info($course);
-				$activitycompletiondata = $completion->get_data($cm, true, $user->id);
-				if($activitycompletiondata->completionstate == 1){
-					$status = get_string('complet','local_expreport');
-				}else if($activitycompletiondata->completionstate == 0){
-					$status = get_string('notcomplete','local_expreport');
-				}
-				//getting grade of the particular activity.
-				$activitygrade =expreport_get_activity_grade_expreport($course,$cm,$user);
-				$dataarray[]=array("activityname"=>$activityname,
-					"activitystatus"=>$status,
-					"activitygrade"=>$activitygrade);
-			}
+	// Loop through course criteria.
+	foreach ($completions as $completion) {
+		$criteria = $completion->get_criteria();
+		$row = array();
+		$row['complete'] = $completion->is_complete();
+		$row['timecompleted'] = $completion->timecompleted;
+		$row['moduleinstance']=$criteria->moduleinstance;
+		$modinfo = get_fast_modinfo($course);
+		$cm = $modinfo->get_cm($criteria->moduleinstance);
+		$grading_info = grade_get_grades($course->id, 'mod', $cm->modname, $cm->instance,$user->id);
+		$actgrade = "-";
+		if(!empty($grading_info->items[0])){
+			$grade_item_grademax = $grading_info->items[0]->grademax;
+			$user_final_grade = $grading_info->items[0]->grades[$user->id];
+			$actgrade = $user_final_grade->grade;
 		}
+
+		$row['activitygrade'] = $actgrade;
+		$row['activitytitle'] = $cm->name;
+		$rows[] = $row;
 	}
-	return $dataarray;
+	return $rows;
 }
 
 /**
@@ -279,29 +274,6 @@ function expreport_table_header_expreport(){
 	$reporttable.=html_writer::end_tag('tr');
 	$reporttable.=html_writer::end_tag('thead');
 	return $reporttable;
-}
-/**
-*Manjunath: This function will give activity graded for a particular *activity for an user in course.
-*@param object $course complete course info.
-*@param object $cm contains complete activity info.
-*@param object $user contains complete user info.
-*@return int $activitygrade will return the activity grade for the *user in this activity.
-*/
-function expreport_get_activity_grade_expreport($course,$cm,$user){
-	global $DB;
-	$activitygrade="-";
-	$grades = grade_get_grades($course->id, 'mod', $cm->modname, $cm->instance,$user->id);
-	if(!empty($grades->items)){
-		foreach ($grades->items as $gradekey => $gradevalue) {
-			if($gradevalue->locked != 1){
-				$activityname = $gradevalue->name;
-				foreach ($gradevalue->grades as $gkey => $gvalue) {
-					$activitygrade = $gvalue->grade;
-				}
-			}
-		}
-	}
-	return $activitygrade;
 }
 
 /**
@@ -381,9 +353,14 @@ function expreport_table_data($allusers){
 						$status=get_string('notcomplete','local_expreport');
 					}
 					$temp[]=$status;
-					$temp[]=$activity['activityname'];
-					$temp[]=$activity['activitystatus'];
-					$temp[]=$activity['activitygrade'];
+					$temp[]=$activity['activitytitle'];
+					if($activity['complete']){
+						$actstatus = get_string('complet','local_expreport');
+					}else{
+						$actstatus = get_string('notcomplete','local_expreport');
+					}
+					$temp[] = $actstatus;
+					$temp[] = $activity['activitygrade'];
 					$tabledata[]=$temp;
 				}
 			}
@@ -485,4 +462,48 @@ function expreport_get_excelfile_url(){
 			}
 		}
 	}
+}
+
+/**
+*Manjunath: This function will return all the users who matched the  *filter criteria.
+* @param array $data contains form data once submitted 
+* @return array contains all the users matched the criteria and *status whether the form data have any value or not.
+*/
+function expreport_users_matched_filter_criteria_allusers($data){
+	global $DB;
+	$formdataarray = (array)$data;
+	$returnarray =[];
+	$counter=1;
+	$hasfiltervalue=false;
+	foreach ($formdataarray as $formkey => $formvalue) {
+		$fvalue="";
+		if($formkey !="reportfilename" && $formkey !="submitbutton"){
+
+			$fieldinfo = explode("_", $formkey);
+			if($fieldinfo[0] =="textarea"){
+				if (!empty($formvalue['text']))
+					$fvalue = $formvalue['text'];
+			} else {
+				if (!empty($formvalue)){
+					$fvalue = $formvalue;
+				}
+			}
+			$temp=[];
+			if(!empty($fvalue)){
+				$sql="SELECT userid FROM {user_info_data} WHERE fieldid ='$fieldinfo[1]' AND data='$fvalue'";
+				$result = $DB->get_records_sql($sql);
+				foreach ($result as $reskey => $resvalue) {
+					$temp[] = $resvalue->userid;
+				}
+				if($counter == 1){
+					$returnarray = $temp;
+				}else{
+					$returnarray = array_intersect($returnarray,$temp);
+				}
+				$counter++;
+				$hasfiltervalue=true;
+			}
+		}
+	}
+	return array($returnarray,$hasfiltervalue);
 }

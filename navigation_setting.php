@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of the Certificate module for Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -24,10 +23,16 @@
  * @copyright  Edzlearn Services Pvt Limited <lmsofindia.com>
  * @license    http://www.lmsofindia.com 2017 or later
  */
-
 defined('MOODLE_INTERNAL') || die;
-$plugin->version   = 2020101410;
-$plugin->release   = '2.0';
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->requires  = 2019111200; // Requires this Moodle version.
-$plugin->component = 'local_expreport'; // Full name of the plugin (used for diagnostics).
+global $DB;
+// Used to stay DRY with the get_string function call.
+$componentname = 'local_expreport';
+$ADMIN->add('localplugins', new \admin_category('local_expreport', get_string('title', $componentname)));
+//Add the 'create report' page to the nav tree.
+$ADMIN->add(
+	'local_expreport',
+	new \admin_externalpage(
+		'expreportsetting',
+		get_string('createreport', $componentname),
+		new moodle_url('/local/expreport/index.php')
+	));
