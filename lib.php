@@ -47,15 +47,18 @@ function expreport_users_matched_filter_criteria($data){
 		$counter=1;
 		foreach ($allcourseids as $courseid) {
 			//get the enrolled users in this course.
-			$enrolledusers = expreport_get_enroled_userdata_expreport($courseid);
-			//print_object($enrolledusers);
-			if($allmatchedusers[1]){
-				$allusers = array_intersect($allusers,$enrolledusers);
-			}else{
-				if($counter == 1){
-					$allusers = $enrolledusers;
+			//check if the course exists or not.
+			$courseexists = $DB->get_record('course',array('id'=>$courseid));
+			if(!empty($courseexists)){
+				$enrolledusers = expreport_get_enroled_userdata_expreport($courseid);
+				if($allmatchedusers[1]){
+					$allusers = array_intersect($allusers,$enrolledusers);
 				}else{
-					$allusers = array_unique(array_merge($allusers,$enrolledusers));
+					if($counter == 1){
+						$allusers = $enrolledusers;
+					}else{
+						$allusers = array_unique(array_merge($allusers,$enrolledusers));
+					}
 				}
 			}
 		}
@@ -117,6 +120,8 @@ function expreport_report_table($allusers){
 		//creating course object from course id.
 		$course = $DB->get_record('course',array('id'=>$courseid));
 		//creating rows for all enrolled users in this course.
+		//checking for course exists or not.
+		if(!empty($course)){
 		foreach ($allusers as $userid) {
 			$user = $DB->get_record('user',array('id'=>$userid));
 			$activities = expreport_all_activity_details($course,$user);
@@ -179,7 +184,7 @@ function expreport_report_table($allusers){
 				}
 			}
 		}
-		
+	}	
 	}
 	$reporttable.=html_writer::end_tag('tbody');
 	//including table data ends here.
@@ -323,6 +328,7 @@ function expreport_table_data($allusers){
 		//creating course object from course id.
 		$course = $DB->get_record('course',array('id'=>$courseid));
 		//creating rows for all enrolled users in this course.
+		if(!empty($course)){
 		foreach ($allusers as $userid) {
 			$user = $DB->get_record('user',array('id'=>$userid));
 			$activities = expreport_all_activity_details($course,$user);
@@ -365,6 +371,7 @@ function expreport_table_data($allusers){
 				}
 			}
 		}
+	}
 	}
 	return $tabledata;
 }
@@ -484,7 +491,10 @@ function expreport_users_matched_filter_criteria_allusers($data){
 				if (!empty($formvalue['text']))
 					$fvalue = $formvalue['text'];
 			} else {
-				if (!empty($formvalue)){
+				if (!empty($formvalue) && $fieldinfo[0] =="text"){
+					//removing space from the value.
+					$fvalue = trim($formvalue);
+				}else if(!empty($formvalue)){
 					$fvalue = $formvalue;
 				}
 			}

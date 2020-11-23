@@ -46,14 +46,14 @@ class report_form extends moodleform {
 			if(!empty($fieldvalues)){
 				if($fieldvalues->datatype =='text'){
 					$mform->addElement('text',"text_".$fieldvalues->id.'_'.$fieldvalues->shortname, $fieldvalues->name);
-					$mform->setType($fieldvalues->shortname, PARAM_RAW);
+					$mform->setType("text_".$fieldvalues->id.'_'.$fieldvalues->shortname, PARAM_RAW);
 				}
 			}
 			//Creating text area fields.
 			if(!empty($fieldvalues)){
 				if($fieldvalues->datatype =='textarea'){
 					$mform->addElement('editor', "textarea_".$fieldvalues->id."_".$fieldvalues->shortname, $fieldvalues->name, 'wrap="virtual" rows="10" cols="80"');
-					$mform->setType($fieldvalues->shortname, PARAM_RAW);
+					$mform->setType("textarea_".$fieldvalues->id."_".$fieldvalues->shortname, PARAM_RAW);
 				}
 			}
 			//Creating dropdown if exists.
@@ -64,7 +64,7 @@ class report_form extends moodleform {
 						$dropdownarray[$dropdownvalues]=$dropdownvalues;
 					}
 					$mform->addElement('select', "menu_".$fieldvalues->id."_".$fieldvalues->shortname, $fieldvalues->name, $dropdownarray);
-					$mform->setType($fieldvalues->shortname, PARAM_RAW);
+					$mform->setType("menu_".$fieldvalues->id."_".$fieldvalues->shortname, PARAM_RAW);
 				}
 			}
 			//Creating date selector if exists.
@@ -77,7 +77,7 @@ class report_form extends moodleform {
 				);
 				if($fieldvalues->datatype =='datetime'){
 					$mform->addElement('date_time_selector', "datetime_".$fieldvalues->id."_".$fieldvalues->shortname, $fieldvalues->name,$date_options);
-					$mform->setType($fieldvalues->shortname, PARAM_RAW);
+					$mform->setType("datetime_".$fieldvalues->id."_".$fieldvalues->shortname, PARAM_RAW);
 				}
 			}
 

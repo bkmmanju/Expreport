@@ -15,4 +15,4 @@ Upon first installation you will see a notification across the screen that has n
 
 Site administration > Plugins -> Local plugins -> Export Report Settings
 
-Fill all the settings needed for report generation. On installation this plugin will create a new table in the database called 'local_expreport'.
+Fill all the settings needed for report generation. On installation this plugin will create a new table in the database called 'local_expreport'. 
