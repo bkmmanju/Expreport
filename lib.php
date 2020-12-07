@@ -43,6 +43,7 @@ function expreport_users_matched_filter_criteria($data){
 	$config = get_config('expreport');
 	$allcourses = $config->courseids;
 	$hasusers = false;
+	$usersarray=[];
 	if(!empty($allcourses)){
 		$allcourseids = explode(",", $allcourses);
 		$counter=1;
@@ -55,7 +56,7 @@ function expreport_users_matched_filter_criteria($data){
 				if(!empty($enrolledusers)){
 					//$allmatchedusers[1] will have the status if any filter is applied
 					if($allmatchedusers[1]){
-						$allusers = array_intersect($allusers,$enrolledusers);
+						$usersarray[$courseid] = array_intersect($allusers,$enrolledusers);
 					}else{
 					//this means there is no filter applied.
 						if($counter == 1){
@@ -73,11 +74,14 @@ function expreport_users_matched_filter_criteria($data){
 	}
 	//gettin all users matching filter criteri and also enrolled in course ends.
 	if($hasusers){
-		return $allusers;
+		if($allmatchedusers[1]){
+			return $usersarray;
+		}else{
+			return $allusers;
+		}
 	}else{
 		return false;
-	}
-	
+	}	
 }
 
 /**
@@ -105,21 +109,21 @@ function expreport_get_enroled_userdata_expreport($courseid){
 function expreport_report_table($allusers){
 	global $DB,$CFG;
 	$config = get_config('expreport');
-	$allcourses = $config->courseids;
-	$allcourseids = explode(",", $allcourses);
+	// $allcourses = $config->courseids;
+	// $allcourseids = explode(",", $allcourses);
 	$userfields = $config->profilefields;
 	$exploadvalus = explode(",", $userfields);
 	//making in array format for all users.
-	$i = 1;
-	$userinarray = "";
-	foreach ($allusers as $user) {
-		if($i == 1){
-			$userinarray ="'".$user."'";
-		}else{
-			$userinarray = $userinarray.","."'".$user."'";
-		}
-		$i++;
-	}
+	// $i = 1;
+	// $userinarray = "";
+	// foreach ($allusers as $user) {
+	// 	if($i == 1){
+	// 		$userinarray ="'".$user."'";
+	// 	}else{
+	// 		$userinarray = $userinarray.","."'".$user."'";
+	// 	}
+	// 	$i++;
+	// }
 
 	$reporttable="";
 	$reporttable.=html_writer::start_tag('table',array('id'=>'myTable'));
@@ -128,22 +132,25 @@ function expreport_report_table($allusers){
 	//including table header ends here.
 	//including table data here.
 	$reporttable.=html_writer::start_tag('tbody');
-	foreach ($allcourseids as $courseid) {
 
-		//creating course object from course id.
-		$course = $DB->get_record('course',array('id'=>$courseid));
-		//creating rows for all enrolled users in this course.
-		//checking for course exists or not.
-		if(!empty($course)){
-			foreach ($allusers as $userid) {
-				$user = $DB->get_record('user',array('id'=>$userid));
+	// foreach ($allcourseids as $courseid) {
+
+	// 	//creating course object from course id.
+	// 	$course = $DB->get_record('course',array('id'=>$courseid));
+	// 	//creating rows for all enrolled users in this course.
+	// 	//checking for course exists or not.
+	// 	if(!empty($course)){
+	foreach ($allusers as $courseid => $users) {
+		foreach ($users as $userid) {
+			$user = $DB->get_record('user',array('id'=>$userid));
+			$course = $DB->get_record('course',array('id'=>$courseid));
 			//23-11-20 we are checking to make sure the user is enroled in this course or not.
-				$coursecontext = context_course::instance($course->id);
+			// $coursecontext = context_course::instance($course->id);
 
-				if (is_enrolled($coursecontext, $user, '', true)) {
-				}else{
-				continue;//pick up the next user.
-			}
+			// if (is_enrolled($coursecontext, $user, '', true)) {
+			// }else{
+			// 	continue;//pick up the next user.
+			// }
 
 
 			$activities = expreport_all_activity_details($course,$user);
@@ -206,12 +213,15 @@ function expreport_report_table($allusers){
 				}
 			}
 		}
-	}	
-}
-$reporttable.=html_writer::end_tag('tbody');
+	}
+// 	}	
+// }
+
+
+	$reporttable.=html_writer::end_tag('tbody');
 	//including table data ends here.
-$reporttable.=html_writer::end_tag('table');
-return $reporttable;
+	$reporttable.=html_writer::end_tag('table');
+	return $reporttable;
 }
 
 /**
