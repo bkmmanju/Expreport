@@ -33,6 +33,7 @@ $name = required_param('name',PARAM_RAW);
 //decoding the json data into array.
 $content = json_decode($data);
 if(!empty($content)){
+
 	$config = get_config('expreport');
 	$allcourses = $config->courseids;
 	$allcourseids = explode(",", $allcourses);

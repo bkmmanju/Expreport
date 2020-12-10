@@ -349,58 +349,53 @@ function expreport_header_data(){
 function expreport_table_data($allusers){
 	global $DB;
 	$config = get_config('expreport');
-	$allcourses = $config->courseids;
-	$allcourseids = explode(",", $allcourses);
 	$userfields = $config->profilefields;
 	$exploadvalus = explode(",", $userfields);
 	$header = expreport_header_data();
 	$tabledata=[];
 	$tabledata[]=$header;
-	foreach ($allcourseids as $courseid) {
+	foreach ($allusers as $courseid => $users) {
 		//creating course object from course id.
 		$course = $DB->get_record('course',array('id'=>$courseid));
-		//creating rows for all enrolled users in this course.
-		if(!empty($course)){
-			foreach ($allusers as $userid) {
-				$user = $DB->get_record('user',array('id'=>$userid));
-				$activities = expreport_all_activity_details($course,$user);
-				if(!empty($activities)){
-					foreach ($activities as $activity) {
-						$temp=[];
-						$temp[]=$user->username;
-						$temp[]=fullname($user);
+		foreach ($users as $userid) {
+			$user = $DB->get_record('user',array('id'=>$userid));
+			$activities = expreport_all_activity_details($course,$user);
+			if(!empty($activities)){
+				foreach ($activities as $activity) {
+					$temp=[];
+					$temp[]=$user->username;
+					$temp[]=fullname($user);
 					//adding user custom fields.
-						foreach ($exploadvalus as $fvalue) {
-							$fieldinfo = $DB->get_record('user_info_field',array('shortname'=>$fvalue));
-							if(!empty($fieldinfo)){
-								$fielddata = $DB->get_record('user_info_data',array('userid'=>$userid,'fieldid'=>$fieldinfo->id));
-								if(!empty($fielddata)){
-									$temp[] = $fielddata->data;
-								}else{
-									$temp[] = "-";
-								}
+					foreach ($exploadvalus as $fvalue) {
+						$fieldinfo = $DB->get_record('user_info_field',array('shortname'=>$fvalue));
+						if(!empty($fieldinfo)){
+							$fielddata = $DB->get_record('user_info_data',array('userid'=>$userid,'fieldid'=>$fieldinfo->id));
+							if(!empty($fielddata)){
+								$temp[] = $fielddata->data;
+							}else{
+								$temp[] = "-";
 							}
 						}
-					//adding user customfield data ends.
-						$temp[]=$course->fullname;
-						$cinfo = new completion_info($course);
-						$iscomplete = $cinfo->is_course_complete($userid);
-						if(!empty($iscomplete)){
-							$status=get_string('complet','local_expreport');
-						}else{
-							$status=get_string('notcomplete','local_expreport');
-						}
-						$temp[]=$status;
-						$temp[]=$activity['activitytitle'];
-						if($activity['complete']){
-							$actstatus = get_string('complet','local_expreport');
-						}else{
-							$actstatus = get_string('notcomplete','local_expreport');
-						}
-						$temp[] = $actstatus;
-						$temp[] = $activity['activitygrade'];
-						$tabledata[]=$temp;
 					}
+					//adding user customfield data ends.
+					$temp[]=$course->fullname;
+					$cinfo = new completion_info($course);
+					$iscomplete = $cinfo->is_course_complete($userid);
+					if(!empty($iscomplete)){
+						$status=get_string('complet','local_expreport');
+					}else{
+						$status=get_string('notcomplete','local_expreport');
+					}
+					$temp[]=$status;
+					$temp[]=$activity['activitytitle'];
+					if($activity['complete']){
+						$actstatus = get_string('complet','local_expreport');
+					}else{
+						$actstatus = get_string('notcomplete','local_expreport');
+					}
+					$temp[] = $actstatus;
+					$temp[] = $activity['activitygrade'];
+					$tabledata[]=$temp;
 				}
 			}
 		}

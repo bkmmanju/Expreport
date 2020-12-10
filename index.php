@@ -122,16 +122,22 @@ if ($mform->is_cancelled()) {
 		$html.=html_writer::end_div();
 		$html.=html_writer::end_div();
 		//creating link for direct download excel if the count is less than 200000.
-		$downloadlink=$CFG->wwwroot.'/local/expreport/downloadexcel.php?data='.json_encode($allusers).'&name='.$fromform->reportfilename;
+		$downloadlink=$CFG->wwwroot.'/local/expreport/downloadexcel.php';
 		//checking the count of rows needs to be added to report table. if the count is less than 2 lack then the user will get direct download excel button.
 		if($datacount < 200000){
+			$sendvalue = json_encode($allusers);
 			$html.=html_writer::start_div('row');
 			$html.=html_writer::start_div('col-md-12 text-center');
-			$html.=html_writer::start_tag('a',array('href'=>$downloadlink,'class'=>'btn btn-info','id'=>'download_excel'));
+			$html.=html_writer::start_tag('form',array('action'=>$downloadlink,'method'=>'post'));
+			$html.=html_writer::start_tag('input',array('type'=>'hidden','value'=>$sendvalue,'name'=>'data'));
+			$html.=html_writer::start_tag('input',array('type'=>'hidden','value'=>$fromform->reportfilename,'name'=>'name'));
+			$html.=html_writer::start_tag('button',array('type'=>'submit','class'=>'btn btn-info'));
 			$html.=get_string('downloadinexcel','local_expreport');
-			$html.=html_writer::end_tag('a');
+			$html.=html_writer::end_tag('button');
+			$html.=html_writer::end_tag('form');
 			$html.=html_writer::end_div();
 			$html.=html_writer::end_div();
+
 		}else{
 			//if the record is more than 2 lack display the notice regarding that.
 			$html.=html_writer::start_div('row');
